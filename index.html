@@ -326,18 +326,18 @@
                         <div class="row">
                             <div>
                                 <label>Customer Name</label>
-                                <input type="text" id="name">
+                                <input type="text" id="name" required>
                             </div>
                             <div>
-                                <label>Account No / Reference</label>
-                                <input type="text" id="account">
+                                <label id="accountLabel">Account No / Aadhaar No</label>
+                                <input type="text" id="account" inputmode="numeric" maxlength="12" required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div>
                                 <label>Total Amount</label>
-                                <input type="number" id="amount">
+                                <input type="number" id="amount" required>
                             </div>
                             <div>
                                 <label>Phone Number</label>
@@ -384,7 +384,7 @@
                                 <span id="rName"></span>
                             </div>
                             <div class="receipt-row">
-                                <span>Account</span>
+                                <span id="rAccountLabel">Account</span>
                                 <span id="rAccount"></span>
                             </div>
                             <div class="receipt-row">
@@ -693,16 +693,68 @@
             return "TXN-" + state.settings.nextTxnId;
         }
 
+        function detectAccountType(rawAccount) {
+            if (rawAccount.length === 12) return "aadhaar";
+            return "account";
+        }
+
+        function sanitizeAccountInput() {
+            const accountInput = document.getElementById("account");
+            const digitsOnly = accountInput.value.replace(/\D/g, "").slice(0, 12);
+            const accountType = detectAccountType(digitsOnly);
+
+            accountInput.value = digitsOnly;
+            accountInput.maxLength = 12;
+            accountInput.placeholder = accountType === "aadhaar"
+                ? "Enter 12-digit Aadhaar No"
+                : "Enter 11-digit Account No or 12-digit Aadhaar No";
+        }
+
+        function formatAccountDisplay(rawAccount, accountType) {
+            if (!rawAccount) return "--";
+
+            if (accountType === "aadhaar" && rawAccount.length === 12) {
+                return `${rawAccount.slice(0, 4)}-${rawAccount.slice(4, 8)}-${rawAccount.slice(8, 12)}`;
+            }
+
+            return rawAccount;
+        }
+
+        function validateTransactionForm() {
+            const name = document.getElementById("name").value.trim();
+            const account = document.getElementById("account").value.trim();
+            const amount = document.getElementById("amount").value.trim();
+
+            if (!name || !account || !amount) {
+                alert("Name, Account/Aadhaar No, and Amount are mandatory");
+                return false;
+            }
+
+            if (account.length !== 11 && account.length !== 12) {
+                alert("Account No must be 11 digits or Aadhaar No must be 12 digits");
+                return false;
+            }
+
+            if (Number(amount) <= 0) {
+                alert("Amount must be greater than 0");
+                return false;
+            }
+
+            return true;
+        }
+
         function updateReceipt() {
             const lang = state.settings.language;
-            const rawAccount = document.getElementById("account").value || "";
 
-            let maskedAccount = "--";
-            if (rawAccount.length > 4) {
-                maskedAccount = "x".repeat(rawAccount.length - 4) + rawAccount.slice(-4);
-            } else if (rawAccount.length > 0) {
-                maskedAccount = rawAccount;
-            }
+            sanitizeAccountInput();
+
+            const rawAccount = document.getElementById("account").value || "";
+            const accountType = detectAccountType(rawAccount);
+            const formattedAccount = formatAccountDisplay(rawAccount, accountType);
+            const accountLabel = rawAccount.length === 12 ? "Aadhaar No" : "Account No";
+
+            document.getElementById("accountLabel").innerText = accountLabel;
+            document.getElementById("rAccountLabel").innerText = accountLabel;
 
             const header = document.querySelector("#receipt h3");
             const subheader = document.querySelector("#receipt p");
@@ -719,7 +771,7 @@
             document.getElementById("rDate").innerText = new Date().toLocaleString('en-IN').toUpperCase();
             document.getElementById("rTxn").innerText = getTxnId();
             document.getElementById("rName").innerText = document.getElementById("name").value || "--";
-            document.getElementById("rAccount").innerText = maskedAccount;
+            document.getElementById("rAccount").innerText = formattedAccount;
             document.getElementById("rType").innerText = document.getElementById("type").value;
             document.getElementById("rMode").innerText = document.getElementById("mode").value;
             document.getElementById("rAmount").innerText = "₹" + (document.getElementById("amount").value || 0);
@@ -741,6 +793,12 @@
         });
 
         async function saveTransaction() {
+            sanitizeAccountInput();
+
+            if (!validateTransactionForm()) {
+                return;
+            }
+
             if (!validateCash()) {
                 alert("Cash denomination total does not match amount");
                 return;
@@ -755,8 +813,9 @@
                 type: document.getElementById("type").value,
                 mode: document.getElementById("mode").value,
                 status: document.getElementById("status").value,
-                name: document.getElementById("name").value,
-                account: document.getElementById("account").value,
+                name: document.getElementById("name").value.trim(),
+                accountType: detectAccountType(document.getElementById("account").value.trim()),
+                account: document.getElementById("account").value.trim(),
                 phone: document.getElementById("phone").value,
                 amount: document.getElementById("amount").value,
                 n500: state.cash[500] || 0,
@@ -803,6 +862,7 @@
             document.getElementById("mode").value = "Cash";
 
             buildCashInputs();
+            sanitizeAccountInput();
             calculateCash();
             validateCash();
         }
@@ -844,6 +904,7 @@
 
 
         calculateCash();
+        sanitizeAccountInput();
         validateCash();
         updateReceipt();
 
