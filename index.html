@@ -185,39 +185,6 @@
             margin: 10px 0;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        th {
-            background: #f9fafb;
-        }
-
-        .staff-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f9fafb;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .staff-row button {
-            background: red;
-            color: white;
-            padding: 6px 10px;
-        }
-
         .save-btn {
             width: 100%;
             background: black;
@@ -239,6 +206,7 @@
         }
 
         @media(max-width:900px) {
+
             .grid {
                 grid-template-columns: 1fr;
             }
@@ -249,6 +217,7 @@
         }
 
         @media print {
+
             body * {
                 visibility: hidden;
             }
@@ -276,259 +245,298 @@
 
 <body>
 
+    <!-- LOGIN -->
+
     <div id="loginScreen">
+
         <div class="login-box">
+
             <h2>Finance Ledger Login</h2>
 
             <label>Username</label>
+
             <input type="text" id="loginUser">
 
             <label>Password</label>
+
             <input type="password" id="loginPass">
 
-            <button onclick="login()">Login</button>
+            <button onclick="login()">
+
+                Login
+
+            </button>
+
         </div>
+
     </div>
+
+    <!-- APP -->
 
     <div id="app" class="hidden">
 
         <div class="sidebar">
+
             <h2>Finance Ledger</h2>
 
-            <button class="tabBtn active"
-                onclick="showTab('newTxn',this)">
+            <button class="tabBtn active">
+
                 New Transaction
-            </button>
 
-            <button class="tabBtn"
-                onclick="showTab('ledger',this)">
-                Ledger
             </button>
-
-            <button class="tabBtn"
-                onclick="openSettings(this)">
-                Settings
-            </button>
-
-            <hr style="margin:20px 0;">
 
             <button class="logout-btn"
                 onclick="logout()">
+
                 Logout
+
             </button>
+
         </div>
 
         <div class="content">
 
-            <div id="newTxn">
+            <div class="grid">
 
-                <div class="grid">
+                <!-- FORM -->
 
-                    <!-- FORM -->
+                <div class="card">
 
-                    <div class="card">
+                    <h2>New Transaction</h2>
 
-                        <h2>New Transaction</h2>
+                    <div class="row">
 
-                        <div class="row">
+                        <div>
 
-                            <div>
-                                <label>Transaction Type</label>
+                            <label>Transaction Type</label>
 
-                                <select id="type">
-                                    <option>Deposit</option>
-                                    <option>Withdrawal</option>
-                                    <option>Transfer</option>
-                                </select>
-                            </div>
+                            <select id="type">
 
-                            <div>
-                                <label>Payment Mode</label>
+                                <option>Deposit</option>
 
-                                <select id="mode">
-                                    <option>Cash</option>
-                                    <option>Digital</option>
-                                </select>
-                            </div>
+                                <option>Withdrawal</option>
 
-                        </div>
+                                <option>Transfer</option>
 
-                        <div class="row">
-
-                            <div>
-
-                                <label>
-                                    Customer Name *
-                                </label>
-
-                                <input type="text" id="name">
-
-                            </div>
-
-                            <div>
-
-                                <label>
-                                    Account / Aadhaar No *
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="account"
-                                    maxlength="14"
-                                    placeholder="1234-5678-9012">
-
-                            </div>
-
-                        </div>
-
-                        <div class="row">
-
-                            <div>
-
-                                <label>
-                                    Total Amount *
-                                </label>
-
-                                <input type="number" id="amount">
-
-                            </div>
-
-                            <div>
-
-                                <label>
-                                    Phone Number
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="phone"
-                                    maxlength="10">
-
-                            </div>
-
-                        </div>
-
-                        <div id="cashWrapper">
-
-                            <h3>Cash Denominations</h3>
-
-                            <div id="cashSection"></div>
-
-                            <div class="cash-total"
-                                id="cashTotal">
-                                Calculated Cash: ₹0
-                            </div>
-
-                            <div id="cashError"
-                                class="error hidden">
-                            </div>
-
-                        </div>
-
-                        <div style="margin-top:20px;">
-
-                            <label>Status</label>
-
-                            <select id="status">
-                                <option>Successful</option>
-                                <option>Pending</option>
                             </select>
 
                         </div>
 
-                        <button id="saveBtn"
-                            class="save-btn"
-                            onclick="saveTransaction()">
+                        <div>
 
-                            Save Transaction
+                            <label>Payment Mode</label>
 
-                        </button>
+                            <select id="mode">
 
-                    </div>
+                                <option>Cash</option>
 
-                    <!-- RECEIPT -->
+                                <option>Digital</option>
 
-                    <div class="card">
-
-                        <div class="receipt" id="receipt">
-
-                            <h3>
-                                घनश्याम बुक डिपो एवं ई-मित्र
-                            </h3>
-
-                            <p>
-                                मुख्य बस स्टैंड, बिलाड़ा,
-                                जोधपुर - 342602
-                                <br>
-                                e-Mitra ID : 1A77A969
-                            </p>
-
-                            <div class="divider"></div>
-
-                            <div class="receipt-row">
-                                <span>Date</span>
-                                <span id="rDate"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Txn ID</span>
-                                <span id="rTxn"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Name</span>
-                                <span id="rName"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Account/Aadhaar</span>
-                                <span id="rAccount"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Phone</span>
-                                <span id="rPhone"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Type</span>
-                                <span id="rType"></span>
-                            </div>
-
-                            <div class="receipt-row">
-                                <span>Mode</span>
-                                <span id="rMode"></span>
-                            </div>
-
-                            <div class="divider"></div>
-
-                            <div class="receipt-row">
-                                <b>Total</b>
-                                <b id="rAmount">₹0</b>
-                            </div>
-
-                            <div class="divider"></div>
-
-                            <p>
-                                This receipt is valid only for
-                                next four days from date of generation.
-                            </p>
-
-                            <p>
-                                यह रसीद जारी होने की तारीख से
-                                अगले चार दिनों के लिए ही मान्य है।
-                            </p>
+                            </select>
 
                         </div>
 
-                        <button class="print-btn"
-                            onclick="window.print()">
+                    </div>
 
-                            Print Receipt
+                    <div class="row">
 
-                        </button>
+                        <div>
+
+                            <label>
+                                Customer Name *
+                            </label>
+
+                            <input type="text" id="name">
+
+                        </div>
+
+                        <div>
+
+                            <label>
+                                Account / Aadhaar No *
+                            </label>
+
+                            <input type="text"
+                                id="account"
+                                maxlength="14"
+                                placeholder="1234-5678-9012">
+
+                        </div>
 
                     </div>
+
+                    <div class="row">
+
+                        <div>
+
+                            <label>
+                                Total Amount *
+                            </label>
+
+                            <input type="number" id="amount">
+
+                        </div>
+
+                        <div>
+
+                            <label>
+                                Phone Number
+                            </label>
+
+                            <input type="text"
+                                id="phone"
+                                maxlength="10">
+
+                        </div>
+
+                    </div>
+
+                    <!-- CASH SECTION -->
+
+                    <div id="cashWrapper">
+
+                        <h3>Cash Denominations</h3>
+
+                        <div id="cashSection"></div>
+
+                        <div class="cash-total"
+                            id="cashTotal">
+
+                            Calculated Cash: ₹0
+
+                        </div>
+
+                        <div id="cashError"
+                            class="error hidden">
+
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top:20px;">
+
+                        <label>Status</label>
+
+                        <select id="status">
+
+                            <option>Successful</option>
+
+                            <option>Pending</option>
+
+                        </select>
+
+                    </div>
+
+                    <button id="saveBtn"
+                        class="save-btn"
+                        onclick="saveTransaction()">
+
+                        Save Transaction
+
+                    </button>
+
+                </div>
+
+                <!-- RECEIPT -->
+
+                <div class="card">
+
+                    <div class="receipt"
+                        id="receipt">
+
+                        <h3>
+
+                            घनश्याम बुक डिपो एवं ई-मित्र
+
+                        </h3>
+
+                        <p>
+
+                            मुख्य बस स्टैंड,
+                            बिलाड़ा, जोधपुर - 342602
+
+                            <br>
+
+                            e-Mitra ID : 1A77A969
+
+                        </p>
+
+                        <div class="divider"></div>
+
+                        <div class="receipt-row">
+
+                            <span>Date</span>
+
+                            <span id="rDate"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Txn ID</span>
+
+                            <span id="rTxn"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Name</span>
+
+                            <span id="rName"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Account/Aadhaar</span>
+
+                            <span id="rAccount"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Phone</span>
+
+                            <span id="rPhone"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Type</span>
+
+                            <span id="rType"></span>
+
+                        </div>
+
+                        <div class="receipt-row">
+
+                            <span>Mode</span>
+
+                            <span id="rMode"></span>
+
+                        </div>
+
+                        <div class="divider"></div>
+
+                        <div class="receipt-row">
+
+                            <b>Total</b>
+
+                            <b id="rAmount">₹0</b>
+
+                        </div>
+
+                    </div>
+
+                    <button class="print-btn"
+                        onclick="window.print()">
+
+                        Print Receipt
+
+                    </button>
 
                 </div>
 
@@ -540,57 +548,16 @@
 
     <script>
 
-        const MANAGEMENT_PASSWORD = "pawapatel@123";
-
         const denominations = [500, 200, 100, 50, 20, 10];
 
         const state = {
-            settings: null,
-            currentStaff: null,
-            cash: {},
-            ledger: []
+
+            nextTxnId: 1001,
+            cash: {}
+
         };
 
-        function initSettings() {
-
-            const saved =
-                localStorage.getItem("ledgerSettings");
-
-            if (saved) {
-
-                state.settings = JSON.parse(saved);
-
-            } else {
-
-                state.settings = {
-
-                    nextTxnId: 1001,
-
-                    workspaceId: "WS-001",
-
-                    scriptUrl: "",
-
-                    language: "hi",
-
-                    staffs: [
-                        {
-                            username: "admin",
-                            password: "1234"
-                        }
-                    ]
-
-                };
-
-                localStorage.setItem(
-                    "ledgerSettings",
-                    JSON.stringify(state.settings)
-                );
-
-            }
-
-        }
-
-        initSettings();
+        // LOGIN
 
         function login() {
 
@@ -600,16 +567,7 @@
             const p =
                 document.getElementById("loginPass").value.trim();
 
-            const user =
-                state.settings.staffs.find(
-                    s =>
-                    s.username === u &&
-                    s.password === p
-                );
-
-            if (user) {
-
-                state.currentStaff = user.username;
+            if (u === "admin" && p === "1234") {
 
                 document
                     .getElementById("loginScreen")
@@ -631,53 +589,68 @@
 
         }
 
+        // LOGOUT
+
         function logout() {
 
             location.reload();
 
         }
 
-        function showTab(id, btn) {
+        // TXN ID
 
-            document
-                .querySelectorAll(".tabBtn")
-                .forEach(b => b.classList.remove("active"));
+        function getTxnId() {
 
-            btn.classList.add("active");
-
-            document
-                .getElementById("newTxn")
-                .classList.add("hidden");
-
-            document
-                .getElementById("ledger")
-                .classList.add("hidden");
-
-            document
-                .getElementById("settings")
-                .classList.add("hidden");
-
-            document
-                .getElementById(id)
-                .classList.remove("hidden");
+            return "TXN-" + state.nextTxnId;
 
         }
 
-        function openSettings(btn) {
+        // AADHAAR FORMAT
 
-            const pass =
-                prompt("Enter Management Password");
+        function formatAadhaar(value) {
 
-            if (pass !== MANAGEMENT_PASSWORD) {
+            value =
+                value.replace(/\D/g, '');
 
-                alert("Wrong Password");
-                return;
+            value =
+                value.substring(0, 12);
 
-            }
+            let formatted =
+                value.match(/.{1,4}/g);
 
-            showTab("settings", btn);
+            return formatted
+                ? formatted.join('-')
+                : '';
 
         }
+
+        // ACCOUNT INPUT FORMAT
+
+        document
+            .getElementById("account")
+            .addEventListener("input", function(e) {
+
+                e.target.value =
+                    formatAadhaar(e.target.value);
+
+                updateReceipt();
+
+            });
+
+        // PHONE INPUT
+
+        document
+            .getElementById("phone")
+            .addEventListener("input", function(e) {
+
+                e.target.value =
+                    e.target.value.replace(/\D/g, '');
+
+                updateReceipt();
+
+            });
+
+        // CASH INPUTS
 
         function buildCashInputs() {
 
@@ -714,6 +687,8 @@
 
         buildCashInputs();
 
+        // CASH CALCULATE
+
         function calculateCash() {
 
             let total = 0;
@@ -722,7 +697,7 @@
 
                 const input =
                     document.querySelector(
-                        \`[data-note="\${d}"]\`
+                        `[data-note="${d}"]`
                     );
 
                 const qty =
@@ -733,8 +708,8 @@
                 const subtotal = qty * d;
 
                 document.getElementById(
-                    \`sub\${d}\`
-                ).innerText = \`₹\${subtotal}\`;
+                    `sub${d}`
+                ).innerText = `₹${subtotal}`;
 
                 total += subtotal;
 
@@ -743,11 +718,13 @@
             document.getElementById(
                 "cashTotal"
             ).innerText =
-                \`Calculated Cash: ₹\${total}\`;
+                `Calculated Cash: ₹${total}`;
 
             return total;
 
         }
+
+        // CASH VALIDATE
 
         function validateCash() {
 
@@ -793,7 +770,7 @@
                 document.getElementById(
                     "cashError"
                 ).innerText =
-                    \`Cash total ₹\${cashTotal} does not match entered amount ₹\${amount}\`;
+                    `Cash total ₹${cashTotal} does not match entered amount ₹${amount}`;
 
                 document.getElementById(
                     "saveBtn"
@@ -815,51 +792,7 @@
 
         }
 
-        function getTxnId() {
-
-            return "TXN-" +
-                state.settings.nextTxnId;
-
-        }
-
-        // AADHAAR FORMAT
-
-        function formatAadhaar(value) {
-
-            value =
-                value.replace(/\D/g, '');
-
-            value =
-                value.substring(0, 12);
-
-            let formatted =
-                value.match(/.{1,4}/g);
-
-            return formatted
-                ? formatted.join('-')
-                : '';
-
-        }
-
-        document
-            .getElementById("account")
-            .addEventListener("input", function(e) {
-
-                e.target.value =
-                    formatAadhaar(e.target.value);
-
-                updateReceipt();
-
-            });
-
-        document
-            .getElementById("phone")
-            .addEventListener("input", function(e) {
-
-                e.target.value =
-                    e.target.value.replace(/\D/g, '');
-
-            });
+        // RECEIPT UPDATE
 
         function updateReceipt() {
 
@@ -874,52 +807,34 @@
                     "x".repeat(rawAccount.length - 4) +
                     rawAccount.slice(-4);
 
-            } else if (rawAccount.length > 0) {
+            } else {
 
                 maskedAccount = rawAccount;
 
             }
 
-            document.getElementById(
-                "rDate"
-            ).innerText =
-                new Date()
-                .toLocaleString('en-IN')
-                .toUpperCase();
+            document.getElementById("rDate").innerText =
+                new Date().toLocaleString('en-IN');
 
-            document.getElementById(
-                "rTxn"
-            ).innerText =
+            document.getElementById("rTxn").innerText =
                 getTxnId();
 
-            document.getElementById(
-                "rName"
-            ).innerText =
+            document.getElementById("rName").innerText =
                 document.getElementById("name").value || "--";
 
-            document.getElementById(
-                "rAccount"
-            ).innerText =
-                maskedAccount;
+            document.getElementById("rAccount").innerText =
+                maskedAccount || "--";
 
-            document.getElementById(
-                "rPhone"
-            ).innerText =
+            document.getElementById("rPhone").innerText =
                 document.getElementById("phone").value || "--";
 
-            document.getElementById(
-                "rType"
-            ).innerText =
+            document.getElementById("rType").innerText =
                 document.getElementById("type").value;
 
-            document.getElementById(
-                "rMode"
-            ).innerText =
+            document.getElementById("rMode").innerText =
                 document.getElementById("mode").value;
 
-            document.getElementById(
-                "rAmount"
-            ).innerText =
+            document.getElementById("rAmount").innerText =
                 "₹" +
                 (
                     document.getElementById("amount").value || 0
@@ -929,13 +844,14 @@
 
         }
 
+        // LIVE UPDATE
+
         [
             "type",
             "mode",
             "name",
             "amount",
-            "status",
-            "phone"
+            "status"
         ].forEach(id => {
 
             document
@@ -947,6 +863,8 @@
                 .addEventListener("change", updateReceipt);
 
         });
+
+        // CASH LIVE UPDATE
 
         document.addEventListener("input", (e) => {
 
@@ -964,9 +882,9 @@
 
         });
 
-        async function saveTransaction() {
+        // SAVE TRANSACTION
 
-            // VALIDATION
+        function saveTransaction() {
 
             const name =
                 document.getElementById("name").value.trim();
@@ -1031,86 +949,19 @@
 
             }
 
-            const payload = {
+            alert(
+                "Transaction Saved Successfully"
+            );
 
-                action: "saveTransaction",
+            state.nextTxnId++;
 
-                workspaceId:
-                    state.settings.workspaceId,
+            resetForm();
 
-                timestamp:
-                    new Date().toISOString(),
-
-                staff:
-                    state.currentStaff,
-
-                txnId:
-                    getTxnId(),
-
-                type:
-                    document.getElementById("type").value,
-
-                mode:
-                    document.getElementById("mode").value,
-
-                status:
-                    document.getElementById("status").value,
-
-                name,
-                account,
-                phone,
-                amount,
-
-                n500:
-                    state.cash[500] || 0,
-
-                n200:
-                    state.cash[200] || 0,
-
-                n100:
-                    state.cash[100] || 0,
-
-                n50:
-                    state.cash[50] || 0,
-
-                n20:
-                    state.cash[20] || 0,
-
-                n10:
-                    state.cash[10] || 0
-
-            };
-
-            try {
-
-                state.ledger.unshift(payload);
-
-                renderLedger();
-
-                alert(
-                    "Transaction Saved Successfully"
-                );
-
-                state.settings.nextTxnId++;
-
-                localStorage.setItem(
-                    "ledgerSettings",
-                    JSON.stringify(state.settings)
-                );
-
-                resetForm();
-
-                updateReceipt();
-
-            } catch (err) {
-
-                console.log(err);
-
-                alert("Error Saving Transaction");
-
-            }
+            updateReceipt();
 
         }
+
+        // RESET
 
         function resetForm() {
 
@@ -1136,47 +987,6 @@
             calculateCash();
 
             validateCash();
-
-        }
-
-        function renderLedger() {
-
-            const tbody =
-                document.getElementById("ledgerBody");
-
-            tbody.innerHTML = "";
-
-            state.ledger.forEach(t => {
-
-                tbody.innerHTML += `
-
-                <tr>
-
-                    <td>
-                        ${new Date(t.timestamp)
-                            .toLocaleString('en-IN')
-                            .toUpperCase()}
-                    </td>
-
-                    <td>${t.txnId}</td>
-
-                    <td>${t.staff}</td>
-
-                    <td>${t.name}</td>
-
-                    <td>${t.type}</td>
-
-                    <td>${t.mode}</td>
-
-                    <td>${t.status}</td>
-
-                    <td>₹${t.amount}</td>
-
-                </tr>
-
-                `;
-
-            });
 
         }
 
