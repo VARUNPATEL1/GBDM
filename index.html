@@ -490,28 +490,120 @@
             ledger: []
         };
 
+        function isAdminUser() {
+            return state.currentStaff === "admin";
+        }
+
+        function getCloudSettingsDocId() {
+            return "global-settings";
+        }
+
+        function getDefaultSettings() {
+            return {
+                nextTxnId: 1001,
+                workspaceId: "WS-001",
+                scriptUrl: "",
+                language: "hi",
+                staffs: [
+                    { username: "admin", password: "1234" }
+                ]
+            };
+        }
+
+        function normalizeSettings(settings = {}) {
+            const defaults = getDefaultSettings();
+            return {
+                ...defaults,
+                ...settings,
+                workspaceId: (settings.workspaceId || defaults.workspaceId).trim(),
+                scriptUrl: (settings.scriptUrl || "").trim(),
+                language: settings.language || defaults.language,
+                staffs: Array.isArray(settings.staffs) && settings.staffs.length
+                    ? settings.staffs
+                    : defaults.staffs
+            };
+        }
+
+        function persistSettingsLocally() {
+            localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+        }
+
         function initSettings() {
             const saved = localStorage.getItem("ledgerSettings");
             if (saved) {
-                state.settings = JSON.parse(saved);
-                if (!state.settings.language) state.settings.language = "hi";
+                state.settings = normalizeSettings(JSON.parse(saved));
             } else {
-                state.settings = {
-                    nextTxnId: 1001,
-                    workspaceId: "WS-001",
-                    scriptUrl: "",
-                    language: "hi",
-                    staffs: [
-                        { username: "admin", password: "1234" }
-                    ]
-                };
-                localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+                state.settings = getDefaultSettings();
+                persistSettingsLocally();
             }
         }
 
         initSettings();
 
-        function login() {
+        async function waitForFirebase() {
+            let retries = 50;
+            while (retries > 0) {
+                if (window.firebaseSettingsFns?.doc &&
+                    window.firebaseSettingsFns?.getDoc &&
+                    window.firebaseSettingsFns?.setDoc &&
+                    window.db) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries--;
+            }
+            return false;
+        }
+
+        async function loadSettingsFromCloud() {
+            const isReady = await waitForFirebase();
+            if (!isReady) return;
+
+            try {
+                const { doc, getDoc } = window.firebaseSettingsFns;
+                const docRef = doc(window.db, "ledgerSettings", getCloudSettingsDocId());
+                const snapshot = await getDoc(docRef);
+
+                if (!snapshot.exists()) return;
+
+                const cloudSettings = normalizeSettings(snapshot.data());
+                state.settings = {
+                    ...cloudSettings,
+                    scriptUrl: cloudSettings.scriptUrl || state.settings.scriptUrl || ""
+                };
+                persistSettingsLocally();
+            } catch (error) {
+                console.error("Settings load error:", error);
+            }
+        }
+
+        async function saveSettingsToCloud() {
+            const isReady = await waitForFirebase();
+            if (!isReady) return;
+
+            try {
+                const { doc, setDoc } = window.firebaseSettingsFns;
+                const docRef = doc(window.db, "ledgerSettings", getCloudSettingsDocId());
+                await setDoc(docRef, state.settings);
+            } catch (error) {
+                console.error("Settings save error:", error);
+            }
+        }
+
+        function updateSettingsAccess() {
+            const scriptInput = document.getElementById("scriptUrl");
+            const saveButton = document.querySelector("#settings .save-btn");
+            const isAdmin = isAdminUser();
+
+            scriptInput.disabled = !isAdmin;
+            scriptInput.title = isAdmin
+                ? ""
+                : "Only admin can change the Google Apps Script URL";
+
+            saveButton.textContent = isAdmin ? "Save Settings" : "Save Limited Settings";
+        }
+
+        async function login() {
             const u = document.getElementById("loginUser").value.trim();
             const p = document.getElementById("loginPass").value.trim();
 
@@ -524,7 +616,9 @@
                 document.getElementById("loginScreen").classList.add("hidden");
                 document.getElementById("app").classList.remove("hidden");
 
+                await loadSettingsFromCloud();
                 updateReceipt();
+                updateSettingsAccess();
                 loadLedgerFromGoogleSheet();
             } else {
                 alert("Invalid Username or Password");
@@ -563,16 +657,25 @@
             document.getElementById("scriptUrl").value = state.settings.scriptUrl;
             document.getElementById("settingLanguage").value = state.settings.language || "hi";
 
+            updateSettingsAccess();
             renderStaffs();
         }
 
-        function saveSettings() {
-            state.settings.nextTxnId = parseInt(document.getElementById("settingTxnId").value) || 1001;
-            state.settings.workspaceId = document.getElementById("workspaceId").value;
-            state.settings.scriptUrl = document.getElementById("scriptUrl").value;
-            state.settings.language = document.getElementById("settingLanguage").value;
+        async function saveSettings() {
+            const existingScriptUrl = (state.settings.scriptUrl || "").trim();
 
-            localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+            state.settings.nextTxnId = parseInt(document.getElementById("settingTxnId").value) || 1001;
+            state.settings.workspaceId = document.getElementById("workspaceId").value.trim() || "WS-001";
+            state.settings.language = document.getElementById("settingLanguage").value;
+            state.settings.scriptUrl = isAdminUser()
+                ? document.getElementById("scriptUrl").value.trim()
+                : existingScriptUrl;
+
+            state.settings = normalizeSettings(state.settings);
+            persistSettingsLocally();
+            await saveSettingsToCloud();
+
+            document.getElementById("scriptUrl").value = state.settings.scriptUrl;
             updateReceipt();
             alert("Settings Saved");
         }
@@ -607,7 +710,8 @@
             }
 
             state.settings.staffs.push({ username: u, password: p });
-            localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+            persistSettingsLocally();
+            saveSettingsToCloud();
 
             document.getElementById("newStaffUser").value = "";
             document.getElementById("newStaffPass").value = "";
@@ -624,7 +728,8 @@
             if (!confirm("Delete this staff?")) return;
 
             state.settings.staffs.splice(index, 1);
-            localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+            persistSettingsLocally();
+            saveSettingsToCloud();
             renderStaffs();
         }
 
@@ -841,7 +946,8 @@
                 alert("Transaction Saved Successfully");
 
                 state.settings.nextTxnId++;
-                localStorage.setItem("ledgerSettings", JSON.stringify(state.settings));
+                persistSettingsLocally();
+                saveSettingsToCloud();
 
                 resetForm();
                 updateReceipt();
@@ -916,6 +1022,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
         import {
             getFirestore,
+            doc,
+            getDoc,
+            setDoc,
             collection,
             addDoc,
             getDocs,
@@ -949,6 +1058,12 @@
             getDocs,
             query,
             orderBy
+        };
+
+        window.firebaseSettingsFns = {
+            doc,
+            getDoc,
+            setDoc
         };
 
         console.log("Firebase initialized successfully.");
